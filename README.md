@@ -33,7 +33,7 @@ openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes -keyout example.key 
 ENCODED_HEADER=$(echo -n 'user:pass' | base64) go run main.go &
 
 # 2.2 or in docker
-docker run -d --rm --name https-proxy -e ENCODED_HEADER=$(echo -n 'user:pass' | base64) -v ./example.crt:/proxy/example.crt -v ./example.key:/proxy/example.key -p 8080:8080 ghcr.io/alexdyukov/https-proxy
+docker run -d --user $(id -u):$(id -g) --name https-proxy -e ENCODED_HEADER=$(echo -n 'user:pass' | base64) -v ./example.crt:/proxy/example.crt -v ./example.key:/proxy/example.key -p 8080:8080 ghcr.io/alexdyukov/https-proxy
 
 # 3. test proxy
 curl -I --proxy-cacert ./example.crt --proxy-basic --proxy-user user:pass -x https://localhost:8080 https://google.com
