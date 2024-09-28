@@ -58,10 +58,14 @@ func proxy(responseWriter http.ResponseWriter, request *http.Request) {
 }
 
 func handler(expectedValue string) http.HandlerFunc {
+	if expectedValue == "" {
+		return proxy
+	}
+
 	return http.HandlerFunc(func(responseWriter http.ResponseWriter, request *http.Request) {
 		value, found := strings.CutPrefix(request.Header.Get("Proxy-Authorization"), "Basic ")
 		if !found || value != expectedValue {
-			http.Error(responseWriter, "", http.StatusForbidden)
+			http.Error(responseWriter, "", http.StatusProxyAuthRequired)
 
 			return
 		}

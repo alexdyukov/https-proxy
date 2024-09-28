@@ -25,22 +25,19 @@ Timeout for proxy incoming connections. Outgoing requests does not have timeouts
 ## Usage
 
 ```
-# 1. create selfsigned certificates
+# 1. generate selfsigned certificate
 openssl req -x509 -newkey rsa:4096 -sha256 -days 365 -nodes -keyout example.key -out example.crt -subj "/CN=localhost"
-
-# 2. run proxy
-# 2.1 by go command
-ENCODED_HEADER=$(echo -n 'user:pass' | base64) go run main.go &
-
-# 2.2 or in docker
-docker run -d --user $(id -u):$(id -g) --name https-proxy -e ENCODED_HEADER=$(echo -n 'user:pass' | base64) -v ./example.crt:/proxy/example.crt -v ./example.key:/proxy/example.key -p 8080:8080 ghcr.io/alexdyukov/https-proxy
-
-# 3. test proxy
+# 2.1 run https-proxy without password auth
+go run main.go
+# 2.2 or with password auth
+ENCODED_HEADER=$(echo -n 'user:pass' | base64) go run main.go
+# 3.1 test proxy without password auth
+curl -I --proxy-cacert ./example.crt -x https://localhost:8080 https://google.com
+# 3.2 test proxy with password auth
 curl -I --proxy-cacert ./example.crt --proxy-basic --proxy-user user:pass -x https://localhost:8080 https://google.com
 ```
 Curl output should be something like this
 ```
-$ curl -I --proxy-cacert ./example.crt --proxy-basic --proxy-user user:pass -x https://localhost:8080 https://google.com
 HTTP/1.1 200 OK
 Date: Mon, 23 Sep 2024 07:02:43 GMT
 Transfer-Encoding: chunked
